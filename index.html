@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>IntelliTraffic: Smart Signal Simulation</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #111;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    .intersection {
+      display: grid;
+      grid-template-columns: repeat(2, 120px);
+      grid-template-rows: repeat(2, 120px);
+      gap: 40px;
+      margin: 40px;
+    }
+    .light {
+      width: 120px;
+      height: 120px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 16px;
+      color: white;
+    }
+    .red { background: red; }
+    .green { background: green; }
+    .density {
+      margin-top: 10px;
+      text-align: center;
+    }
+    input[type=number] {
+      width: 50px;
+      padding: 4px;
+      margin: 0 5px;
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: #3af;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>🚦 IntelliTraffic: AI Traffic Signal Simulation</h1>
+
+  <div class="intersection">
+    <div id="north" class="light red">North</div>
+    <div id="east" class="light red">East</div>
+    <div id="west" class="light red">West</div>
+    <div id="south" class="light red">South</div>
+  </div>
+
+  <div class="density">
+    <label>North Cars: <input type="number" id="northInput" value="5"></label>
+    <label>East Cars: <input type="number" id="eastInput" value="3"></label>
+    <label>South Cars: <input type="number" id="southInput" value="2"></label>
+    <label>West Cars: <input type="number" id="westInput" value="1"></label>
+    <button onclick="startSmartCycle()">▶️ Start Smart Simulation</button>
+  </div>
+
+  <script>
+    const directions = ["north", "east", "south", "west"];
+    let vehicleCounts = {
+      north: 5,
+      east: 3,
+      south: 2,
+      west: 1,
+    };
+
+    let cycleIndex = 0;
+    let intervalId = null;
+
+    function getNextDirection() {
+      // Get direction with max vehicles
+      const sorted = Object.entries(vehicleCounts).sort((a, b) => b[1] - a[1]);
+      return sorted[0][0];
+    }
+
+    function updateLights(activeDir) {
+      directions.forEach(dir => {
+        document.getElementById(dir).className = 'light red';
+      });
+      document.getElementById(activeDir).className = 'light green';
+    }
+
+    function startSmartCycle() {
+      // Read input values
+      vehicleCounts.north = parseInt(document.getElementById("northInput").value) || 0;
+      vehicleCounts.east = parseInt(document.getElementById("eastInput").value) || 0;
+      vehicleCounts.south = parseInt(document.getElementById("southInput").value) || 0;
+      vehicleCounts.west = parseInt(document.getElementById("westInput").value) || 0;
+
+      if (intervalId) clearInterval(intervalId);
+
+      function cycle() {
+        const next = getNextDirection();
+        updateLights(next);
+
+        // Simulate cars passing: reduce count
+        vehicleCounts[next] = Math.max(0, vehicleCounts[next] - 2);
+
+        // Continue after delay
+        setTimeout(() => {}, 1000);
+      }
+
+      cycle(); // initial call
+
+      intervalId = setInterval(() => {
+        cycle();
+      }, 4000);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Intersection Simulator</title>
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+  <style>
+    .signal { display:inline-block; margin:20px; }
+    .light { width:50px; height:50px; border-radius:25px; background:#333; opacity:0.3; }
+    .light.active { opacity:1; }
+    #North-South .ns { background: green; }
+    #East-West .ew { background: green; }
+  </style>
+</head>
+<body>
+  <h1>Intersection Dashboard</h1>
+  <img src="/video_feed" width="800"/>
+  <div id="dashboard"></div>
+
+  <div>
+    <div class="signal" id="North-South">
+      <h3>North‑South</h3>
+      <div class="light ns"></div>
+      <p id="count-NS"></p>
+    </div>
+    <div class="signal" id="East-West">
+      <h3>East‑West</h3>
+      <div class="light ew"></div>
+      <p id="count-EW"></p>
+    </div>
+  </div>
+
+  <script>
+    const socket = io();
+    let timeout;
+
+    socket.on("update", data => {
+      document.getElementById("count-NS").innerText = `Vehicles: ${data.counts["North-South"]}`;
+      document.getElementById("count-EW").innerText = `Vehicles: ${data.counts["East-West"]}`;
+
+      let ns = data.counts["North-South"], ew = data.counts["East-West"];
+      let active = ns > ew ? "North‑South" : "East-West";
+
+      document.querySelectorAll('.signal .light').forEach(el => el.classList.remove('active'));
+      document.querySelector(`#${active} .light`).classList.add('active');
+
+      if (data.emergency) {
+        clearTimeout(timeout);
+        document.querySelectorAll('.signal .light').forEach(el => el.classList.remove('active'));
+        document.querySelector("#North-South .light").classList.add('active');
+        timeout = setTimeout(()=>{},5000);
+      }
+    });
+  </script>
+</body>
+</html>
